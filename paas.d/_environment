@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# vim: ft=sh sw=2 ts=2 expandtab
+SUBCOMMAND_DESC="Environment loaded for all commands"
+SUBCOMMAND_HELP=$(cat <<EOH
+This file is loaded before calling other subcommands,
+variables and functions will be available to all
+subcommands.
+EOH
+)
+
+# A helper function...
+# that returns true if running on OSX
+function __osx() {
+  # __osx - return if we are running in 'Darwin' (macos)
+  [[ $(uname) == "Darwin" ]]
+}
+
+# This will open a file with open in OSX
+# or try xdg-open on Ubuntu...
+function open_file() {
+  # open_file FILE - call an open file cmd on macos call 'open' otherwise call 'xdg-open'
+  local file=${1}
+  log "open_file(${file})"
+  [[ -n ${file} ]] || return
+  log "calling OS dependent open command"
+  __osx && open ${file} || xdg-open ${file}
+}
+
+function session_title() {
+  local title="${1}"
+
+  in_cyan "\n======================================================="
+  in_cyan "${title}"
+  in_cyan "======================================================="
+}
+
+# Example, force Java to version 1.7 for all subcomands.
+# export JAVA_HOME=$(/usr/libexec/java_home -v 1.7)
+export BB8_IMG="${ROOT_DIR}/images/bb8.txt"
+export RESOURCES_DIR="${ROOT_DIR}/resources"
+export USER_CONFIG_FILE="${CONFIGURATION_DIR}/user_config"
+
+#load users specific configuration
+[[ -e "${USER_CONFIG_FILE}" ]] && source "${USER_CONFIG_FILE}"

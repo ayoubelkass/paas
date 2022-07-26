@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+DOCS_FOLDER="${PROJECTS_DIR}/docs"
+function __show_all_topics() {
+  topics=$(ls -l "${DOCS_FOLDER}"/*.md | grep -v README.md | awk -F '/' '{print $NF}' | awk -F '-' '{print $1}' | uniq)
+
+  in_cyan "\nList of all QaOps topics:"
+  printf "%s\n" "TOPICS"
+  printf "\n"
+  for topic in "${topics[@]}"; do
+    printf "%s\n" "${topic}"
+  done | sort
+}
+
+
+# vim: ft=sh
+SUBCOMMAND_DESC="List of all QaOps projects"
+SUBCOMMAND_HELP=$(cat <<EOH
+
+<TOPIC> <LANGUAGE>         Will search for the contents in the QaOps docs
+                             - TOPIC    -> topic file to be searched
+                             - LANGUAGE -> either 'br' or 'en'.
+                                You can set the default language in the user_config file
+
+$(__show_all_topics)
+
+EOH
+)
+
+
+#Different actions based on arguments
+case ${1} in
+  *)
+    topic="${1}"
+    language="${2:-${USER_LANGUAGE}}"
+
+    [[ -z "${topic}" ]] && return
+
+    if [[ ! -d "${DOCS_FOLDER}" ]]; then
+      in_red "Docs folder not found in ${DOCS_FOLDER}.\nPlease download it"
+      exit 0
+    fi
+
+    doc_file="${DOCS_FOLDER}/${topic}-${language}.md"
+
+    if [[ -e "${doc_file}" ]]; then
+      cat "${doc_file}"
+    else
+      in_red "File ${doc_file} does not exit.\nPlease give a valid topic"
+    fi
+  ;;
+esac
+
